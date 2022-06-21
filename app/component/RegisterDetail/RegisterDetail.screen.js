@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import {  SafeAreaView, ScrollView, View} from 'react-native';
+import {  Alert, SafeAreaView, ScrollView, View} from 'react-native';
 import {Appbar, Button, TextInput} from 'react-native-paper';
 import registerDetailStyles from './RegisterDetail.style';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -36,7 +36,7 @@ async function handleChange(name, value){
     if(name =="plz"){
         if(value.length ==5){
         let result = await getOrt(value);
-        result = result.places[0]["place name"]
+        result = result.postalCodes[0]["placeName"];
         handleChange("ort", result)
         }
     }
@@ -68,13 +68,20 @@ async function handleChange(name, value){
 }
 
 const goBack = () => navigate("Register");
+
+
 const goHome = async () => {
     let adresse = user.strasse + " " + user.hausnummer;
-    addUser( user.email, user.benutzername,user.password,user.name, user.nachname, user.plz, user.ort, adresse,user.land); 
-    const sessionID = {
-        id: await getSessionID(user.benutzername, user.password)
+    if(await addUser( user.email, user.benutzername,user.password,user.name, user.nachname, user.plz, user.ort, adresse,user.land)){
+        const loggedInUser = {
+            sessionid: await getSessionID(user.benutzername, user.password),
+            login: user.benutzername,
+        }
+        navigate('Home', {loggedInUser});
+    }else{
+        Alert.alert("Fehler bei der Anmeldung");
     }
-    navigate('Home', {sessionID});
+    
 }
 
 
@@ -124,8 +131,7 @@ const goHome = async () => {
            
             <Button style={registerDetailStyles.cardButton} mode='contained' onPress={goHome}>Register</Button>
             </ScrollView>
-         
-<View style={registerDetailStyles.container}>
+            <View style={registerDetailStyles.container}>
 <MapView
   provider={PROVIDER_GOOGLE} // remove if not using Google Maps
   style={registerDetailStyles.map}
@@ -141,6 +147,7 @@ coordinate={{latitude: user.latitude, longitude: user.longitude }}>
 </MapView>
 
 </View>
+
    </SafeAreaView>
   
   );

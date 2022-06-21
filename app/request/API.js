@@ -19,10 +19,14 @@ const checkLoginName = async (benutzername) => {
     }
 }
 
-const getOrt = async (ort) => {
+const getOrt = async (plz) => {
+  const data ={
+    postalcode: plz,
+    username: "Jannik1228"
+  }
     try {
       const res = await fetch(
-        'https://api.zippopotam.us/de/' + ort ,{mode: 'cors'}
+        baseURL + "getOrt?" + new URLSearchParams(data)  ,{mode: 'cors'}
       );
       const json = await res.json();
       return json;
@@ -32,7 +36,7 @@ const getOrt = async (ort) => {
 }
 
 const getLocation = async (land, plz, ort, strasse, hausnummer) => {
-
+    console.log(land, plz, ort,  strasse, hausnummer);
     try {
       const res = await fetch(
         "http://api.positionstack.com/v1/forward?access_key=e3012d1d20ad7aac6f3ae5d136974c7f&query="+  hausnummer + "+"+ strasse + "+,+" +ort +",+"+land ,{mode: 'cors'}
@@ -114,6 +118,7 @@ const getUsersLocation = async ( session, login, id) => {
 }
 
 const setUserLocation = async (data) => {
+  console.log(data);
   try {
     const res = await fetch(
       baseURL + 'setStandort' ,{headers: {
@@ -121,7 +126,22 @@ const setUserLocation = async (data) => {
     );
     const json = await res.json();
     console.log(json);
-    return json;
+    return true;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+const logout = async ( data) => {
+  try {
+    const res = await fetch(
+      baseURL + 'logout' ,{headers: {
+        'Content-Type': 'application/json'}, method: "POST", mode: 'cors', body: JSON.stringify(data)}
+    );
+    const json = await res.json();
+    console.log(json);
+    return true;
   } catch (error) {
     console.error(error);
   }
@@ -129,8 +149,5 @@ const setUserLocation = async (data) => {
 
 
 
-
-
-
-export {setUserLocation, getUsersLocation, getSessionID, addUser, getLocation, checkLoginName, getOrt};
+export {logout, setUserLocation, getUsersLocation, getSessionID, addUser, getLocation, checkLoginName, getOrt};
 

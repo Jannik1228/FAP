@@ -55,7 +55,6 @@ import loginStyles from './Login.style';
           <Card.Content>
             <TextInput
               label="Benutzername"
-              keyboardType='benutzername-address'
               onChangeText={value => handleChange("benutzername", value)}
               value={user.benutzername}
               error={benutzernameIsError}

@@ -1,48 +1,62 @@
 
-import React, { useState , componentDidMount, useEffect} from 'react';
-import { ScrollView, SafeAreaView, View } from 'react-native';
+import React, { useState , useEffect} from 'react';
+import { ScrollView, SafeAreaView, View, Alert } from 'react-native';
 import {Appbar, FAB, TextInput, Card, DataTable } from 'react-native-paper';
 import homeStyles from './Home.style';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { getUsersLocation, setUserLocation } from '../../request/API';
+import { getUsersLocation, logout, setUserLocation as putUserLocation} from '../../request/API';
 import CellDataTable from './CellDataTable.screen';
 import MarkerScreen from './Marker.screen';
 import * as Location from 'expo-location';
 
  const HomeScreen =({ route, navigation: { navigate }}) => {
-
-  if(route.params.loggedInUser.sessionid){
-    const [userlocation, setUserLocation] = useState(false);
-    const [usersArray, setUsersArray] = useState([]);
-    const [user, setUser] = useState({
-      latitude: "",
-        longitude: ""
+  console.log("route Prams");
+  console.log(route.params);
+  if(route.params.loggedInUser.sessionid != undefined && route.params.loggedInUser.login ){
+    const [userLocation, setUserLocation] = useState(false);
+    const [mapLocation, setMapLocation] = useState({
+      region: {  
+        latitudeDelta: 0.015,
+        longitudeDelta: 0.0121,
+        latitude: 50.9,
+        longitude: 10.1
+      }
     });
+    const [usersArray, setUsersArray] = useState([]);
     const [benutzerkennung, setBenutzerkennung] = useState("");
    
     useEffect(() => {
       (async () => {
         let location = await Location.getCurrentPositionAsync({});
         console.log(location.coords.latitude);
+        const data ={
+          loginName: route.params.loggedInUser.login,
+          sitzung: route.params.loggedInUser.sessionid,
+          standort: {
+          breitengrad: location.coords.latitude,
+          laengengrad: location.coords.longitude
+        }};
+        console.log("putUser");
+        console.log(await putUserLocation(data));
+        setMapLocation({
+          region: {  
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.0121,
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude
+          }});
         setUserLocation({
-            loginName: route.params.loggedInUser.login,
-            sitzung: route.params.loggedInUser.sessionid,
-            standort: {
-            breitengrad: location.coords.latitude,
-            laengengrad: location.coords.longitude
-        }});
-        console.log(userlocation)
-
+          loginName: route.params.loggedInUser.login,
+          sitzung: route.params.loggedInUser.sessionid,
+          standort: {
+          breitengrad: location.coords.latitude,
+          laengengrad: location.coords.longitude
+        }})
       })();
     }, []);
 
-
-    async function getAllUsers (session, login, id) {
-      let result= await getUsersLocation(session, login, id);
-      setUser({
-        latitude: result.breitengrad,
-        longitude: result.laengengrad
-      });
+    async function getLocations () {
+      let result= await getUsersLocation(route.params.loggedInUser.sessionid, route.params.loggedInUser.login, benutzerkennung);
       setUsersArray(prevUser => [
           ...prevUser,
           {benutzername: benutzerkennung,
@@ -50,26 +64,38 @@ import * as Location from 'expo-location';
             longitude: result.laengengrad}
         ]
       );
+      setMapLocation({
+        region: {  
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.0121,
+          latitude: result.breitengrad,
+          longitude: result.laengengrad
+        }
+      })
       setBenutzerkennung("");
     }
 
    
-  
+  function removeUser(benutzername){
+    setUsersArray(usersArray.filter(item => item.benutzername !== benutzername))
+  }
 
-  const goBack = () => navigate("Login");
-
-  function addBenutzer (){
-      getAllUsers(route.params.loggedInUser.sessionid, route.params.loggedInUser.login, benutzerkennung);
+  async function goBack(){
+    const data = {
+        sitzung: userLocation.sitzung,
+        loginName: userLocation.loginName,
     }
+    await logout(data) ?  navigate("Login") : Alert.alert("Fehler beim Abmelden") 
+  }
 
-  const removeBenutzer = () => console.log("removeBenutzer");
 
   
   return (
     <SafeAreaView style={homeStyles.content}>
       <Appbar style={homeStyles.appbar}>
-          <Appbar.BackAction onPress={goBack}/>
+      
           <Appbar.Content title="Friends an Places"/>
+          <Appbar.Action icon="logout" mode="contained" onPress={goBack} />
         </Appbar>
       <View style={homeStyles.view}>
       <Card>
@@ -81,7 +107,7 @@ import * as Location from 'expo-location';
           onChangeText={newBenutzerkennung => setBenutzerkennung(newBenutzerkennung)}
           value={benutzerkennung}
         ></TextInput>
-        <FAB icon="plus" style={homeStyles.fab} mode='contained' onPress={addBenutzer}>+</FAB>
+        <FAB icon="plus" style={homeStyles.fab} mode='contained' onPress={getLocations}></FAB>
      
       <ScrollView style={homeStyles.scrollView}>
           <DataTable>
@@ -90,8 +116,7 @@ import * as Location from 'expo-location';
             <DataTable.Title>Entfernen</DataTable.Title>
           </DataTable.Header>
           {usersArray.map(item => {
-            console.log(item);
-            return (<CellDataTable key={item.benutzername} benutzername={item.benutzername}/>);
+            return (<CellDataTable key={item.benutzername} removeUser={removeUser} benutzername={item.benutzername}/>);
           })}
           </DataTable>
         </ScrollView>
@@ -100,20 +125,15 @@ import * as Location from 'expo-location';
    </View>
    <View style={homeStyles.container}>
      <MapView
-       provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+       provider={PROVIDER_GOOGLE}
        style={homeStyles.map}
-       region={{
-         latitude: user.latitude,
-         longitude: user.longitude,
-         latitudeDelta: 0.015,
-         longitudeDelta: 0.0121,
-       }}
+       region={mapLocation.region}
      >
        {usersArray.map(item => {
             console.log(item);
             return (<MarkerScreen key={item.benutzername} benutzername={item.benutzername} latitude={item.latitude} longitude={item.longitude}/>);
           })}
-        {userlocation && <MarkerScreen key={userlocation.loginName} benutzername={userlocation.loginName} latitude={userlocation.standort.breitengrad} longitude={userlocation.standort.laengengrad}/>}
+        {userLocation && <MarkerScreen key={userLocation.loginName} benutzername={userLocation.loginName} latitude={userLocation.standort.breitengrad} longitude={userLocation.standort.laengengrad}/>}
      </MapView>
    </View>
    </SafeAreaView>
@@ -126,3 +146,4 @@ import * as Location from 'expo-location';
 
 export default HomeScreen;
 
+/* */

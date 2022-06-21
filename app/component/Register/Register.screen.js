@@ -71,7 +71,11 @@ import { checkLoginName } from '../../request/API';
     const goBack = () => navigate("Login");
     const goRegisterDetail = () => {
         if(!passwordIsError && !emailIsError && !loginNameIsError && !loginNameLongIsError && !loginNameShortIsError){
+            if(user.email != "" && user.benutzername !="" && user.password !=""){
             navigate("RegisterDetail", {user});
+            }else{
+                Alert.alert("Bitte alle Felder befüllen.");
+            }
         }else{  
             Alert.alert("Fehler: Bitte alle Eingaben überprüfen.");
         }
