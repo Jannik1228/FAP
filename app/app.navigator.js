@@ -1,3 +1,4 @@
+//import Libaries, Constants and Functions 
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
@@ -6,7 +7,7 @@ import RegisterScreen from "./component/Register/Register.screen";
 import RegisterDetailScreen from "./component/RegisterDetail/RegisterDetail.screen";
 import HomeScreen from "./component/Home/Home.screen";
 
-
+//Preparing Navigation
 const { Navigator, Screen} = createStackNavigator();
 
 const AppNavigator = () => {
@@ -24,5 +25,5 @@ const AppNavigator = () => {
     </NavigationContainer>
     );
 }
-
+//export Component
 export default AppNavigator;

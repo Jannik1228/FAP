@@ -1,29 +1,35 @@
-
+//import Libaries, Constants and Functions
 import React, { useState } from 'react';
 import {  SafeAreaView, View, Alert} from 'react-native';
 import {Appbar, Button, TextInput, Text} from 'react-native-paper';
 import registerStyles from './Register.style';
 import { checkLoginName } from '../../request/API';
+import {appStyles} from '../../../App.style';
 
  function RegisterScreen({ navigation: { navigate }}) {
-  const [user, setUser] = useState({
-    email:"",
-    benutzername: "",
-    password:"",
-    password2: "",
-});
+  
+    //UseState Statements
     const [loginNameIsError, setLoginNameIsError] = useState(false);
     const [passwordIsError, setPasswordIsError] = useState(false);
     const [loginNameShortIsError, setLoginNameShortIsError] = useState(false);
     const [loginNameLongIsError, setLoginNameLongIsError] = useState(false);
     const [emailIsError, setEmailIsError] = useState(false);
+    const [user, setUser] = useState({
+        email:"",
+        benutzername: "",
+        password:"",
+        password2: "",
+    });
 
+    //handleChange with set-Statements
     async function handleChange(name, value){
         if(name=="email"){
             var regex = /@/;
             regex.test(value) ? setEmailIsError(false): setEmailIsError(true)
         }
         if(name=="benutzername"){
+            console.log(name);
+            console.log(value);
             let res  = await checkLoginName(value);
             setLoginNameIsError(res);
             if(value.length <=4 || value.length >19){
@@ -60,6 +66,22 @@ import { checkLoginName } from '../../request/API';
             }
         }
     }
+
+    //Navigation Statement
+    const goBack = () => navigate("Login");
+    const goRegisterDetail = () => {
+        if(!passwordIsError && !emailIsError && !loginNameIsError && !loginNameLongIsError && !loginNameShortIsError){
+            if(user.email != "" && user.benutzername !="" && user.password !=""){
+            navigate("RegisterDetail", {user});
+            }else{
+                Alert.alert("Fehler: Alle Felder müssen Werte enthalten.");
+            }
+        }else{  
+            Alert.alert("Fehler: Bitte alle Eingaben überprüfen.");
+        }
+    }
+
+    //other functions
     function renderError(errmsg) {
         return (
         <View>
@@ -68,21 +90,10 @@ import { checkLoginName } from '../../request/API';
         );
     }
       
-    const goBack = () => navigate("Login");
-    const goRegisterDetail = () => {
-        if(!passwordIsError && !emailIsError && !loginNameIsError && !loginNameLongIsError && !loginNameShortIsError){
-            if(user.email != "" && user.benutzername !="" && user.password !=""){
-            navigate("RegisterDetail", {user});
-            }else{
-                Alert.alert("Bitte alle Felder befüllen.");
-            }
-        }else{  
-            Alert.alert("Fehler: Bitte alle Eingaben überprüfen.");
-        }
-    }
-
+    
+  //Render Statement
   return (
-    <SafeAreaView style={registerStyles.content}>
+    <SafeAreaView style={appStyles.content}>
             <Appbar style={registerStyles.appbar}>
                 <Appbar.BackAction onPress={goBack}/>
                 <Appbar.Content title="Register"/>
@@ -130,5 +141,6 @@ import { checkLoginName } from '../../request/API';
   );
 }
 
+//export Component
 export default RegisterScreen;
 

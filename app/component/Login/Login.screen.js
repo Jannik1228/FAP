@@ -1,37 +1,22 @@
-
+//import Libaries, Constants and Functions 
 import React, { useState } from 'react';
-import {  SafeAreaView, View } from 'react-native';
+import {  Alert, SafeAreaView, View } from 'react-native';
 import {Button, Card, TextInput, Text} from 'react-native-paper';
+import {appStyles} from '../../../App.style';
 import { getSessionID } from '../../request/API';
 import loginStyles from './Login.style';
 
 
- const LoginScreen =({ navigation: { navigate }}) => {
+const LoginScreen =({ navigation: { navigate }}) => {
+
+  //UseState Statements
+  const [benutzernameIsError, setBenutzernameIsError] = useState(false);
   const [user, setUser] = useState({
     benutzername:"",
     password:"",
   });
 
-  
-  const [benutzernameIsError, setBenutzernameIsError] = useState(false);
-
-  const goRegister = () => navigate('Register');
-    const goHome = async () => {
-      const loggedInUser = {
-        sessionid: await getSessionID(user.benutzername, user.password),
-        login: user.benutzername,
-      }
-      navigate('Home', {loggedInUser});
-    }
-
-  function renderError(errmsg) {
-    return (
-    <View>
-        <Text style={loginStyles.error}>{errmsg}</Text>
-    </View>
-    );
-}
-
+  //handleChange with set-Statements
   function handleChange(name, value){
     if(name=="benutzername"){
         if(value.length <5 || value.length >19){
@@ -47,8 +32,39 @@ import loginStyles from './Login.style';
       };
   });
   }
+
+  //Navigation Statement
+  const goRegister = () => navigate('Register');
+  const goHome = async () => {
+    if(user.benutzername != "" && !benutzernameIsError &&  user.password){
+      let sesseionid = await getSessionID(user.benutzername, user.password);
+      if(sesseionid){
+        const loggedInUser = {
+          sessionid: sesseionid,
+          login: user.benutzername,
+        }
+        navigate('Home', {loggedInUser});
+      }else{
+        Alert.alert("Fehler: Anmeldung fehlgeschlagen. Benutzername und Passwort überprüfen.")
+      }
+    
+    }else{
+      Alert.alert("Fehler: Alle Felder müssen Werte enthalten.");
+    }
+  }
+
+  //other functions
+  function renderError(errmsg) {
+    return (
+    <View>
+        <Text style={loginStyles.error}>{errmsg}</Text>
+    </View>
+    );
+  }
+
+  //Render Statement
   return (
-    <SafeAreaView style={loginStyles.content}>
+    <SafeAreaView style={appStyles.content}>
       <View style={loginStyles.view}>
         <Card>
           <Card.Title title="Friends and Places"></Card.Title>
@@ -75,6 +91,6 @@ import loginStyles from './Login.style';
   
   );
 }
-
+//export Component
 export default LoginScreen;
 

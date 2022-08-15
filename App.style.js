@@ -1,4 +1,5 @@
 import { DefaultTheme } from "react-native-paper";
+import { StyleSheet } from 'react-native';
 
  const theme ={
     ...DefaultTheme,
@@ -9,4 +10,15 @@ import { DefaultTheme } from "react-native-paper";
     }
 }
 
-export default theme;
+const appStyles = StyleSheet.create({
+    content: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection:"row",
+        backgroundColor: 'rgb(101, 37, 111)'
+    },
+})
+
+export {theme, appStyles};

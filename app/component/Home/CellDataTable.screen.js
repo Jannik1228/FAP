@@ -1,14 +1,20 @@
-
+//import Libaries, Constants and Functions
 import React from 'react';
 import { DataTable, IconButton } from 'react-native-paper';
-import homeStyles from './Home.style';
-
+ 
  const CellDataTable =(props) => {
+  
+  //UseState Statements
+  //handleChange with set-Statements
+  //Navigation Statement
+
+  //other functions
   function removeUser(){
     console.log("kkkk");
     props.removeUser(props.benutzername);
   }
 
+  //Render Statement
   return (
           <DataTable.Row>
             <DataTable.Cell>{props.benutzername}</DataTable.Cell>
@@ -18,5 +24,6 @@ import homeStyles from './Home.style';
   );
 }
 
+//export Component
 export default CellDataTable;
 

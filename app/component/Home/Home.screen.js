@@ -1,4 +1,4 @@
-
+//import Libaries, Constants and Functions
 import React, { useState , useEffect} from 'react';
 import { ScrollView, SafeAreaView, View, Alert } from 'react-native';
 import {Appbar, FAB, TextInput, Card, DataTable } from 'react-native-paper';
@@ -8,23 +8,27 @@ import { getUsersLocation, logout, setUserLocation as putUserLocation} from '../
 import CellDataTable from './CellDataTable.screen';
 import MarkerScreen from './Marker.screen';
 import * as Location from 'expo-location';
+import {appStyles} from '../../../App.style';
 
  const HomeScreen =({ route, navigation: { navigate }}) => {
-  console.log("route Prams");
-  console.log(route.params);
+
+  //Condition for sessionid and login
   if(route.params.loggedInUser.sessionid != undefined && route.params.loggedInUser.login ){
+  
+    //UseState Statements
     const [userLocation, setUserLocation] = useState(false);
+    const [usersArray, setUsersArray] = useState([]);
+    const [benutzerkennung, setBenutzerkennung] = useState("");
     const [mapLocation, setMapLocation] = useState({
       region: {  
-        latitudeDelta: 0.015,
+        latitudeDelta: 5,
         longitudeDelta: 0.0121,
         latitude: 50.9,
         longitude: 10.1
       }
     });
-    const [usersArray, setUsersArray] = useState([]);
-    const [benutzerkennung, setBenutzerkennung] = useState("");
-   
+    
+    //useEffect with set-Statements
     useEffect(() => {
       (async () => {
         let location = await Location.getCurrentPositionAsync({});
@@ -55,6 +59,16 @@ import * as Location from 'expo-location';
       })();
     }, []);
 
+    //Navigation Statement
+    async function goBack(){
+      const data = {
+          sitzung: userLocation.sitzung,
+          loginName: userLocation.loginName,
+      }
+      await logout(data) ?  navigate("Login") : Alert.alert("Fehler beim Abmelden") 
+    }
+
+    //other Functions
     async function getLocations () {
       let result= await getUsersLocation(route.params.loggedInUser.sessionid, route.params.loggedInUser.login, benutzerkennung);
       setUsersArray(prevUser => [
@@ -75,23 +89,13 @@ import * as Location from 'expo-location';
       setBenutzerkennung("");
     }
 
-   
-  function removeUser(benutzername){
-    setUsersArray(usersArray.filter(item => item.benutzername !== benutzername))
-  }
-
-  async function goBack(){
-    const data = {
-        sitzung: userLocation.sitzung,
-        loginName: userLocation.loginName,
+    function removeUser(benutzername){
+      setUsersArray(usersArray.filter(item => item.benutzername !== benutzername))
     }
-    await logout(data) ?  navigate("Login") : Alert.alert("Fehler beim Abmelden") 
-  }
 
-
-  
+  //Render Statement
   return (
-    <SafeAreaView style={homeStyles.content}>
+    <SafeAreaView style={appStyles.content}>
       <Appbar style={homeStyles.appbar}>
       
           <Appbar.Content title="Friends an Places"/>
@@ -144,6 +148,5 @@ import * as Location from 'expo-location';
 }
 }
 
+//export Component
 export default HomeScreen;
-
-/* */
